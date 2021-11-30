@@ -1,6 +1,7 @@
 import torch
 import torchvision
 import torchvision.transforms as transforms
+import copy
 import numpy as np
 
 class IMBALANCECIFAR10(torchvision.datasets.CIFAR10):
@@ -60,11 +61,13 @@ class IMBALANCEMNIST(torchvision.datasets.MNIST):
 
     def __init__(self, root, imb_type='exp', imb_factor=0.01, rand_number=0, train=True,
                  transform=None, target_transform=None,
-                 download=False):
+                 download=False,noise_type='none',noise_ratio=0.4):
         super(IMBALANCEMNIST, self).__init__(root, train, transform, target_transform, download)
         np.random.seed(rand_number)
         img_num_list = self.get_img_num_per_cls(self.cls_num, imb_type, imb_factor)
         self.gen_imbalanced_data(img_num_list)
+        if(noise_type != 'none'):
+            self.gen_misclassfied_data(type=noise_type,ratio=noise_ratio)
 
     def get_img_num_per_cls(self, cls_num, imb_type, imb_factor):
         img_max = len(self.data) / cls_num
@@ -100,7 +103,65 @@ class IMBALANCEMNIST(torchvision.datasets.MNIST):
         self.data = torch.tensor(new_data)
         self.targets = torch.tensor(new_targets)
 
+    def gen_misclassfied_data(self,type='sym',ratio='0.4'):
+        if type == 'sym':
+            new_labels = self.get_sym_noise_in_label(self.targets,ratio)
+        elif type == 'asym':
+            new_labels = self.get_rand_asym_noise_in_label(self.targets,ratio)
+        elif type == 'custom':
+            error_map = {0:0,1:7,2:2,3:3,4:4,5:5,6:6,7:1,8:3,9:9}
+            new_labels = self.get_mapped_asym_noise_in_label(self.targets,error_map,ratio)
+        self.original_target = copy.deepcopy(self.targets)
+        self.targets = torch.tensor(new_labels)
+        pass
+
+    def get_sym_noise_in_label(labels, ratio):
+        """The labels must be a numeric value, produces random symmetric noise"""
+        new_labels = []
+        num_cls = np.max(labels) + 1
+        for i, label in enumerate(labels):
+            if np.random.rand() < ratio:
+                new_label = label
+                while new_label == label:
+                    new_label = np.random.randint(num_cls)
+                new_labels.append(new_label)
+            else:
+                new_labels.append(label)
+        return np.array(new_labels)
     
+    def get_rand_asym_noise_in_label(labels,ratio):
+        '''The labels must contain a numeric value, produces a random asymmetric noise'''
+        total_labels = np.max(labels) + 1
+        original_mappping = np.arange(total_labels)
+        new_labels = []
+        while True:
+            new_mapping = np.random.permutation(total_labels)
+            if np.any(original_mappping == new_mapping):
+                continue
+            else:
+                break
+        
+        for i, label in enumerate(labels):
+            if np.random.rand() < ratio:
+                # This converts the label to new label depending upon the map we created
+                new_label = new_mapping[label]
+                new_labels.append(new_label)
+            else:
+                new_labels.append(label)
+
+        return np.array(new_labels)
+
+    def get_mapped_asym_noise_in_label(labels,new_mapping,ratio):
+        '''The labels must contain a numeric value, mapping should be a dict {0:0,1:7,2:2,3:3,4:4,5:5,6:6,7:1,8:3,9:9} produces a random asymmetric noise'''
+        new_labels = []
+        for i, label in enumerate(labels):
+            if np.random.rand() < ratio:
+                # This converts the label to new label depending upon the map we created
+                new_label = new_mapping[label]
+                new_labels.append(new_label)
+            else:
+                new_labels.append(label)
+        return np.array(new_labels)
 
     def get_cls_num_list(self):
         cls_num_list = []

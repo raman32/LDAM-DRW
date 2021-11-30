@@ -68,6 +68,8 @@ parser.add_argument('--gpu', default=None, type=int,
                     help='GPU id to use.')
 parser.add_argument('--root_log',type=str, default='log')
 parser.add_argument('--root_model', type=str, default='checkpoint')
+parser.add_argument('--noise_type', type=str, default='none')
+parser.add_argument('--noise_ratio', type=float, default=0.4)
 best_acc1 = 0
 
 
@@ -170,7 +172,7 @@ def main_worker(gpu, ngpus_per_node, args):
         train_dataset = IMBALANCECIFAR100(root='./data', imb_type=args.imb_type, imb_factor=args.imb_factor, rand_number=args.rand_number, train=True, download=True, transform=transform_train)
         val_dataset = datasets.CIFAR100(root='./data', train=False, download=True, transform=transform_val)
     elif args.dataset == 'mnist':
-        train_dataset = IMBALANCEMNIST(root='./data', imb_type=args.imb_type, imb_factor=args.imb_factor, rand_number=args.rand_number, train=True, download=True, transform=transform_train)
+        train_dataset = IMBALANCEMNIST(root='./data', imb_type=args.imb_type, imb_factor=args.imb_factor, rand_number=args.rand_number, train=True, download=True, transform=transform_train,noise_type=args.noise_type,noise_ratio=args.noise_ratio)
         val_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform_val)
     else:
         warnings.warn('Dataset is not listed')
