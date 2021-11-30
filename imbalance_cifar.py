@@ -99,7 +99,9 @@ class IMBALANCEMNIST(torchvision.datasets.MNIST):
         new_data = np.vstack(new_data)
         self.data = torch.tensor(new_data)
         self.targets = torch.tensor(new_targets)
-        
+
+    
+
     def get_cls_num_list(self):
         cls_num_list = []
         for i in range(self.cls_num):

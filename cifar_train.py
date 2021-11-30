@@ -18,7 +18,7 @@ import models
 from tensorboardX import SummaryWriter
 from sklearn.metrics import confusion_matrix
 from utils import *
-from imbalance_cifar import IMBALANCECIFAR10, IMBALANCECIFAR100
+from imbalance_cifar import IMBALANCECIFAR10, IMBALANCECIFAR100, IMBALANCEMNIST
 from losses import LDAMLoss, FocalLoss
 
 model_names = sorted(name for name in models.__dict__
@@ -170,8 +170,8 @@ def main_worker(gpu, ngpus_per_node, args):
         train_dataset = IMBALANCECIFAR100(root='./data', imb_type=args.imb_type, imb_factor=args.imb_factor, rand_number=args.rand_number, train=True, download=True, transform=transform_train)
         val_dataset = datasets.CIFAR100(root='./data', train=False, download=True, transform=transform_val)
     elif args.dataset == 'mnist':
-        train_dataset = IMBALANCECIFAR100(root='./data', imb_type=args.imb_type, imb_factor=args.imb_factor, rand_number=args.rand_number, train=True, download=True, transform=transform_train)
-        val_dataset = datasets.CIFAR100(root='./data', train=False, download=True, transform=transform_val)
+        train_dataset = IMBALANCEMNIST(root='./data', imb_type=args.imb_type, imb_factor=args.imb_factor, rand_number=args.rand_number, train=True, download=True, transform=transform_train)
+        val_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform_val)
     else:
         warnings.warn('Dataset is not listed')
         return
