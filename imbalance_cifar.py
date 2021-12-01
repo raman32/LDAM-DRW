@@ -151,13 +151,13 @@ class IMBALANCEMNIST(torchvision.datasets.MNIST):
 
         return np.array(new_labels)
 
-    def get_mapped_asym_noise_in_label(labels,new_mapping,ratio):
+    def get_mapped_asym_noise_in_label(self,labels,new_mapping,ratio):
         '''The labels must contain a numeric value, mapping should be a dict {0:0,1:7,2:2,3:3,4:4,5:5,6:6,7:1,8:3,9:9} produces a random asymmetric noise'''
         new_labels = []
         for i, label in enumerate(labels):
             if np.random.rand() < ratio:
                 # This converts the label to new label depending upon the map we created
-                new_label = new_mapping[label]
+                new_label = new_mapping[int(label)]
                 new_labels.append(new_label)
             else:
                 new_labels.append(label)
