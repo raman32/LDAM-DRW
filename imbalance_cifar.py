@@ -115,10 +115,10 @@ class IMBALANCEMNIST(torchvision.datasets.MNIST):
         self.targets = torch.tensor(new_labels)
         pass
 
-    def get_sym_noise_in_label(labels, ratio):
+    def get_sym_noise_in_label(self,labels, ratio):
         """The labels must be a numeric value, produces random symmetric noise"""
         new_labels = []
-        num_cls = np.max(labels) + 1
+        num_cls = 10
         for i, label in enumerate(labels):
             if np.random.rand() < ratio:
                 new_label = label
@@ -129,9 +129,9 @@ class IMBALANCEMNIST(torchvision.datasets.MNIST):
                 new_labels.append(label)
         return np.array(new_labels)
     
-    def get_rand_asym_noise_in_label(labels,ratio):
+    def get_rand_asym_noise_in_label(self,labels,ratio):
         '''The labels must contain a numeric value, produces a random asymmetric noise'''
-        total_labels = np.max(labels) + 1
+        total_labels = 10
         original_mappping = np.arange(total_labels)
         new_labels = []
         while True:
@@ -144,7 +144,7 @@ class IMBALANCEMNIST(torchvision.datasets.MNIST):
         for i, label in enumerate(labels):
             if np.random.rand() < ratio:
                 # This converts the label to new label depending upon the map we created
-                new_label = new_mapping[label]
+                new_label = new_mapping[int(label)]
                 new_labels.append(new_label)
             else:
                 new_labels.append(label)
